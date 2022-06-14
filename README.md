@@ -2,6 +2,7 @@
 
 Example of ports and adapters / hexagon / onion architecture in Rust.
 
+- **Requires** `sqlite3`
 - `cargo run --bin cli` to build & run the CLI application; read-only.
 - `cargo run --bin http` to build & run the http API; read-write.
 
