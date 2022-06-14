@@ -1,0 +1,25 @@
+[package]
+name = "hexa"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "http"
+path = "src/bin/http/main.rs"
+test = false
+
+[[bin]]
+name = "cli"
+path = "src/bin/cli/main.rs"
+test = false
+
+[dependencies]
+# HTTP Framework
+rouille = "3.5.0"
+# Database
+rusqlite = { version = "0.27.0", features = ["bundled"] }
+# Database Connection Pooling
+r2d2 = "0.8.9"
+r2d2_sqlite = { version = "0.20.0", features = ["bundled"] }
+# Ser / De
+serde = { version = "1.0.137", features = ["derive"] }
