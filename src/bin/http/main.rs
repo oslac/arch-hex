@@ -1,5 +1,5 @@
-use hexa::config;
-use std::sync::Arc;
+use hexa::services::db;
+use std::sync::{Arc};
 
 pub mod server;
 
@@ -9,6 +9,6 @@ pub mod api {
 }
 
 fn main() {
-    let db = config::init_repo();
-    server::serve("localhost:8080", Arc::new(db))
+    let db = Arc::new(db::mk_lite());
+    server::serve("localhost:8080", db)
 }

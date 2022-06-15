@@ -1,8 +1,9 @@
-use hexa::{config, domain, ports};
+use hexa::domain;
+use hexa::services::db;
 use std::io::{self, Write};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let db = config::init_repo();
+    let db = db::mk_lite();
 
     loop {
         print!("Enter stock ID: ");
@@ -13,7 +14,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         let id: usize = buf.trim().parse().expect("Expected a number");
 
         let req = domain::StockReq { id, symbol: None };
-        let res = ports::get_stock(req, &db);
+        let res = domain::get_stock(req, &db);
         println!("{:#?}\n", res);
     }
 }

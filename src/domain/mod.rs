@@ -1,17 +1,16 @@
-// Business logic in terms of domain types, separated from external
-// infrastructure by trait.
-//
 // Types in this file are optional indirection.
 //
-// The 4 use cases contain a function implementation of port, and a trait-based
-// implementation.
+// Business logic in terms of domain types, separated from external
+// infrastructure by an interface.
+//
+// The 4 use cases contain a function implementation of ports.
 mod create_stock;
 mod delete_stock;
 mod get_stock;
 
-pub use create_stock::{create_stock, CreateStock};
-pub use delete_stock::{delete, DeleteStock};
-pub use get_stock::{get_all, get_stock, GetAllStocks, GetStock};
+pub use create_stock::create_stock;
+pub use delete_stock::delete_stock;
+pub use get_stock::{get_all, get_stock};
 
 use self::model::Stock;
 use std::fmt::Display;

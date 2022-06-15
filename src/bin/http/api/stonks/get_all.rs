@@ -1,19 +1,14 @@
 use hexa::domain;
-use hexa::ports::GetAllQuery;
-use hexa::services::db::Repo;
 
+use crate::server::SharedDb;
 use rouille::Response;
-use std::sync::Arc;
 
-pub fn serve(db: Arc<dyn Repo>) -> Response {
-    let service = domain::GetAllStocks { db };
-
-    match service.get_all() {
+pub fn serve(db: SharedDb) -> Response {
+    match domain::get_all(&*db) {
         Ok(stocks) => {
             let mut data: Vec<Stock> = vec![];
             for s in stocks.stocks {
-                let stonk = Stock::new(s.id(), s.symbol());
-                data.push(stonk);
+                data.push(Stock::new(s.id(), s.symbol()));
             }
             Response::json(&data)
         }

@@ -1,9 +1,11 @@
 use crate::api::*;
 
-use hexa::services::db::Repo;
+use hexa::services::db::Database;
 use std::sync::Arc;
 
-pub fn serve(url: &str, db: Arc<dyn Repo>) {
+pub type SharedDb = Arc<Database>;
+
+pub fn serve(url: &str, db: SharedDb) {
     println!("\nLISTENING @ {url}");
 
     rouille::start_server(url, move |req| {
@@ -12,13 +14,13 @@ pub fn serve(url: &str, db: Arc<dyn Repo>) {
                 stonks::get_all::serve(db.clone())
             },
             (POST) (/stonk/) => {
-                stonks::create::serve(req, db.clone())
+                stonks::create::serve(req,db.clone())
             },
             (GET) (/stonk/{id: usize}) => {
                 stonks::get::serve(id, db.clone())
             },
             (DELETE) (/stonk/{id: usize}) => {
-                stonks::delete::serve(id, db.clone())
+                stonks::delete::serve(id,db.clone())
             },
 
             (GET) (/health) => {

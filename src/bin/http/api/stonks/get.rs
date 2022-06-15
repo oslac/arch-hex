@@ -1,14 +1,11 @@
+use crate::server::SharedDb;
 use hexa::domain;
-use hexa::ports::GetStockQuery;
-use hexa::services::db::Repo;
-
 use rouille::Response;
-use std::sync::Arc;
 
-pub fn serve(id: usize, db: Arc<dyn Repo>) -> Response {
-    let service = domain::GetStock { db };
+pub fn serve(id: usize, db: SharedDb) -> Response {
+    let req = domain::StockReq { id, symbol: None };
 
-    match service.get_stock(domain::StockReq { id, symbol: None }) {
+    match domain::get_stock(req, &*db) {
         Ok(stonk) => Response::json(&(stonk.id, stonk.symbol)),
         Err(domain::Error::NotFound(id)) => {
             Response::json(&format!("STOCK {id} NOT FOUND")).with_status_code(404)

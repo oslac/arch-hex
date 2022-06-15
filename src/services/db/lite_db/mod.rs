@@ -1,4 +1,3 @@
-use super::{Delete, Get, GetAll, Put, Repo};
 use crate::domain::model::{Stock, StockId};
 use crate::domain::{Error, StockRange};
 mod queries;
@@ -9,44 +8,21 @@ use r2d2_sqlite::SqliteConnectionManager;
 use row::StockRow;
 use rusqlite::params;
 
+use super::{Database, DatabaseImpl};
 use queries::{
     CREATE_TABLE_STOCK, DELETE_STOCK_WITH_ID, INSERT_STOCK, SELECT_ALL, SELECT_STOCK_WITH_ID,
 };
 
+pub fn mk_lite() -> Database {
+    Database(Box::new(LiteDb::default()))
+}
+
 #[derive(Debug)]
-pub struct LiteDb {
+struct LiteDb {
     pool: Pool<SqliteConnectionManager>,
 }
 
-impl LiteDb {
-    pub fn new() -> Self {
-        Self::default()
-    }
-
-    fn insert(&self, stock: &Stock) -> Result<(), Error> {
-        let conn = &self.pool.get().unwrap();
-        let res = conn.execute(INSERT_STOCK, params![stock.id(), stock.symbol()]);
-
-        match res {
-            Ok(_) => Ok(()),
-            _ => Err(Error::Conflict),
-        }
-    }
-
-    fn get(&self, id: StockId) -> Result<Stock, Error> {
-        let conn = &self.pool.get().unwrap();
-        let res = conn.query_row(SELECT_STOCK_WITH_ID, [id.id()], |row| {
-            let id = row.get(0).unwrap();
-            let symbol = row.get(1).unwrap();
-            Ok(StockRow { id, symbol })
-        });
-
-        match res {
-            Ok(stonk) => Ok(stonk.into()),
-            Err(_) => Err(Error::NotFound(id.id())),
-        }
-    }
-
+impl DatabaseImpl for LiteDb {
     fn delete(&self, id: StockId) -> Result<(), Error> {
         let conn = self.pool.get().unwrap();
         let res = conn.execute(DELETE_STOCK_WITH_ID, [id.id()]);
@@ -79,31 +55,29 @@ impl LiteDb {
 
         Ok(stonks)
     }
-}
 
-impl Repo for LiteDb {}
+    fn create(&self, stock: &Stock) -> Result<(), Error> {
+        let conn = &self.pool.get().unwrap();
+        let res = conn.execute(INSERT_STOCK, params![stock.id(), stock.symbol()]);
 
-impl Delete for LiteDb {
-    fn delete(&self, id: StockId) -> Result<(), Error> {
-        self.delete(id)
+        match res {
+            Ok(_) => Ok(()),
+            _ => Err(Error::Conflict),
+        }
     }
-}
 
-impl GetAll for LiteDb {
-    fn get_all(&self) -> Result<StockRange, Error> {
-        self.get_all()
-    }
-}
-
-impl Put for LiteDb {
-    fn put(&self, stock: &Stock) -> Result<(), Error> {
-        self.insert(stock)
-    }
-}
-
-impl Get for LiteDb {
     fn get(&self, id: StockId) -> Result<Stock, Error> {
-        self.get(id)
+        let conn = &self.pool.get().unwrap();
+        let res = conn.query_row(SELECT_STOCK_WITH_ID, [id.id()], |row| {
+            let id = row.get(0).unwrap();
+            let symbol = row.get(1).unwrap();
+            Ok(StockRow { id, symbol })
+        });
+
+        match res {
+            Ok(stonk) => Ok(stonk.into()),
+            Err(_) => Err(Error::NotFound(id.id())),
+        }
     }
 }
 

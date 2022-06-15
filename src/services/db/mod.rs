@@ -3,24 +3,29 @@ use crate::domain::{Error, StockRange};
 
 mod imm_db;
 mod lite_db;
+pub use imm_db::mk_imm;
+pub use lite_db::mk_lite;
 
-pub use imm_db::ImmDb;
-pub use lite_db::LiteDb;
+pub struct Database(Box<dyn DatabaseImpl>);
 
-pub trait Repo: GetAll + Get + Put + Delete {}
+impl Database {
+    pub fn create(&self, stock: Stock) -> Result<(), Error> {
+        self.0.create(&stock)
+    }
+    pub fn get(&self, stock_id: StockId) -> Result<Stock, Error> {
+        self.0.get(stock_id)
+    }
+    pub fn get_all(&self) -> Result<StockRange, Error> {
+        self.0.get_all()
+    }
+    pub fn delete(&self, id: StockId) -> Result<(), Error> {
+        self.0.delete(id)
+    }
+}
 
-pub trait Get {
+pub trait DatabaseImpl: Send + Sync {
     fn get(&self, stock_id: StockId) -> Result<Stock, Error>;
-}
-
-pub trait GetAll {
     fn get_all(&self) -> Result<StockRange, Error>;
-}
-
-pub trait Put {
-    fn put(&self, stock: &Stock) -> Result<(), Error>;
-}
-
-pub trait Delete: Send + Sync {
+    fn create(&self, stock: &Stock) -> Result<(), Error>;
     fn delete(&self, id: StockId) -> Result<(), Error>;
 }
